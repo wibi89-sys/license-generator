@@ -16,6 +16,14 @@ class LicenseSeeder extends Seeder
         $products = [
             [
                 'product_code' => AppProduct::APOTEK_POS,
+                'license_key' => 'APT-DEMO-PRO-2026',
+                'customer_name' => 'Pengguna Demo Apotek',
+                'business_name' => 'Apotek Mandiri Sehat',
+                'pharmacy_name' => 'Apotek Mandiri Sehat',
+                'plan_type' => LicensePlan::PRO_CLOUD_SYNC,
+            ],
+            [
+                'product_code' => AppProduct::APOTEK_POS,
                 'license_key' => 'APT-DEMO-2026-LIVE',
                 'customer_name' => 'Apt. Pengguna Demo',
                 'business_name' => 'Apotek Pos Sehat Sentosa',

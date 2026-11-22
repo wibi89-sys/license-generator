@@ -211,4 +211,12 @@ class LicenseApiController extends Controller
             'is_expired' => $license->isExpired(),
         ]);
     }
+
+    public function publicKey(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'success',
+            'public_key' => config('license.public_key') ?: env('LICENSE_PUBLIC_KEY'),
+        ]);
+    }
 }
