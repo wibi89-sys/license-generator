@@ -9,6 +9,7 @@ use App\Enums\LicenseFeature;
 use App\Enums\LicensePlan;
 use App\Http\Controllers\Controller;
 use App\Models\License;
+use App\Services\Licensing\LicenseSignerService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -227,5 +228,39 @@ class LicenseController extends Controller
         ]);
 
         return back()->with('success', "Status lisensi {$license->license_key} berhasil diubah menjadi " . strtoupper($license->status));
+    }
+
+    public function downloadLic(Request $request, License $license, LicenseSignerService $signer)
+    {
+        $hwid = $request->input('hwid', $license->bound_hwid);
+
+        if (empty($hwid)) {
+            return back()->with('error', 'Lisensi belum terikat pada HWID komputer mana pun. Silakan aktifkan online terlebih dahulu atau tentukan HWID tujuan.');
+        }
+
+        // If hwid is provided for unbound license, bind it
+        if (empty($license->bound_hwid) && !empty($hwid)) {
+            $license->update([
+                'bound_hwid' => $hwid,
+                'bound_at' => now(),
+            ]);
+        }
+
+        $payload = $signer->buildPayload($license, (string) $hwid);
+        $cert = $signer->signPayload($payload);
+
+        $json = json_encode($cert, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $filename = "activation_{$license->license_key}.lic";
+
+        $license->auditLogs()->create([
+            'action' => 'downloaded_lic',
+            'ip_address' => $request->ip(),
+            'notes' => "File sertifikat lisensi offline ({$filename}) diunduh untuk HWID {$hwid}",
+        ]);
+
+        return response($json, 200, [
+            'Content-Type' => 'application/json',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
     }
 }

@@ -210,4 +210,42 @@ class AuthTest extends TestCase
         $responseToken->assertRedirect(route('admin.settings.index'));
         $this->assertNotEmpty(\App\Models\AppSetting::get('master_api_token'));
     }
+
+    public function test_authenticated_user_can_download_offline_lic_file(): void
+    {
+        $user = User::factory()->create();
+
+        $license = \App\Models\License::create([
+            'license_key' => 'APT-OFFL-9999-8888',
+            'product_code' => \App\Enums\AppProduct::APOTEK_POS,
+            'customer_name' => 'Offline Client',
+            'business_name' => 'Apotek Mandiri',
+            'pharmacy_name' => 'Apotek Mandiri',
+            'branch_code' => 'BR01',
+            'plan_type' => \App\Enums\LicensePlan::STANDARD_LOCAL,
+            'billing_type' => 'lifetime',
+            'limits_json' => ['users' => 5],
+            'features_json' => ['pos' => true],
+            'status' => 'active',
+            'max_reset_count' => 2,
+            'reset_used' => 0,
+            'bound_hwid' => 'HWID_SAMPLE_12345',
+            'bound_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('admin.licenses.download-lic', $license));
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Disposition', 'attachment; filename="activation_APT-OFFL-9999-8888.lic"');
+        
+        $json = json_decode($response->getContent(), true);
+        $this->assertIsArray($json);
+        $this->assertEquals('Ed25519', $json['algorithm']);
+        $this->assertNotEmpty($json['payload_b64']);
+        $this->assertNotEmpty($json['signature_b64']);
+
+        $payload = json_decode(base64_decode($json['payload_b64']), true);
+        $this->assertEquals('APT-OFFL-9999-8888', $payload['license_key']);
+        $this->assertEquals('HWID_SAMPLE_12345', $payload['hwid']);
+    }
 }

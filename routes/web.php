@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/licenses/{license}', [LicenseController::class, 'destroy'])->name('licenses.destroy');
         
         // License Actions
+        Route::match(['get', 'post'], '/licenses/{license}/download-lic', [LicenseController::class, 'downloadLic'])->name('licenses.download-lic');
         Route::post('/licenses/{license}/reset-hwid', [LicenseController::class, 'resetHwid'])->name('licenses.reset-hwid');
         Route::post('/licenses/{license}/toggle-status', [LicenseController::class, 'toggleStatus'])->name('licenses.toggle-status');
 
