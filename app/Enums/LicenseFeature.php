@@ -15,4 +15,19 @@ enum LicenseFeature: string
     case CLOUD_SYNC_PULL = 'cloud_sync_pull';
     case MULTI_BRANCH_OPS = 'multi_branch_ops';
     case EXTERNAL_API = 'external_api';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::FINGERPRINT_AUTH => 'Autentikasi Fingerprint',
+            self::LABEL_PRINTING => 'Cetak Label Barcode',
+            self::OFFSITE_BACKUP => 'Backup Otomatis Offsite',
+            self::CLOUD_SYNC_PUSH => 'Sinkronisasi Push Cloud',
+            self::SIPNAP_EXPORT => 'Ekspor Laporan Regulasi (SIPNAP)',
+            self::PROFIT_ANALYTICS => 'Analisis Laporan & Performa',
+            self::CLOUD_SYNC_PULL => 'Sinkronisasi Pull Cloud',
+            self::MULTI_BRANCH_OPS => 'Operasional Multi-Cabang',
+            self::EXTERNAL_API => 'Akses API Eksternal',
+        };
+    }
 }

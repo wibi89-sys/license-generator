@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Masuk — Laksana License</title>
+    <title>Masuk — Laksana Solution</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,33 +63,18 @@
         </button>
     </div>
 
-    <!-- Centered Card (Sesuai Referensi Gambar) -->
+    <!-- Centered Card (Sesuai Referensi Gambar dengan Logo Resmi) -->
     <div class="my-auto w-full max-w-[360px] mx-auto">
         <div class="bg-white dark:bg-slate-900 border border-slate-100/80 dark:border-slate-800 rounded-3xl p-8 sm:p-9 shadow-[0_15px_35px_rgba(0,0,0,0.05)] dark:shadow-none transition-colors">
             
-            <!-- Logo Swirl Globe (Sesuai Logo Laksana pada Gambar) -->
-            <div class="flex justify-center mb-5">
-                <svg class="w-16 h-16" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Globe Sphere with dynamic swoosh bands -->
-                    <!-- Top Swoosh (Cyan / Blue) -->
-                    <path d="M52 14C34 16 20 28 14 44C24 38 40 35 60 36C80 37 96 44 103 54C106 46 104 36 98 28C86 17 70 12 52 14Z" fill="#0077b6" />
-                    <!-- Middle Top Swoosh (Azure Cyan) -->
-                    <path d="M12 48C9 54 8 60 8 66C8 88 24 106 46 110C36 100 32 84 40 70C46 58 60 50 78 48C90 47 101 49 108 55C107 51 105 47 102 44C94 36 78 31 58 30C36 29 19 36 12 48Z" fill="#0096c7" />
-                    <!-- Gold / Amber Accent Ribbon -->
-                    <path d="M108 55C108 55 102 65 92 72C80 80 64 82 50 80C34 78 22 70 14 58C10 68 11 78 16 86C26 78 40 73 56 73C74 73 90 80 98 90C104 82 108 72 108 62C108 59 108 57 108 55Z" fill="#f59e0b" />
-                    <!-- Lower Vibrant Cyan Swoosh -->
-                    <path d="M50 110C70 110 88 98 98 80C90 84 76 86 60 84C42 82 28 74 20 62C14 78 22 96 38 105C42 108 46 110 50 110Z" fill="#00b4d8" />
-                    <!-- Bottom Center Ribbon -->
-                    <path d="M60 84C76 86 90 84 98 80C101 75 103 70 104 65C98 60 88 58 76 58C60 58 46 64 38 72C30 82 30 94 38 102C44 94 50 86 60 84Z" fill="#48cae4" />
-                </svg>
+            <!-- Logo Resmi Laksana Solution -->
+            <div class="flex justify-center mb-6">
+                <img src="{{ asset('images/logo.png') }}" alt="Laksana Solution" class="h-16 w-auto max-w-[220px] object-contain">
             </div>
 
-            <!-- Header Title & Subtitle -->
-            <div class="text-center mb-7">
-                <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                    LAKSANA LICENSE
-                </h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal">
+            <!-- Header Subtitle -->
+            <div class="text-center mb-6">
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-normal">
                     Masuk ke Akun Admin
                 </p>
             </div>

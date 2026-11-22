@@ -65,34 +65,49 @@
             <table class="w-full text-left text-xs divide-y divide-slate-200 dark:divide-slate-800">
                 <thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
                     <tr>
-                        <th class="py-3 px-4">Produk</th>
+                        <th class="py-3 px-4">Produk & Status</th>
                         <th class="py-3 px-4">Kunci Lisensi</th>
                         <th class="py-3 px-4">Bisnis & Pelanggan</th>
                         <th class="py-3 px-4">Tier Paket</th>
                         <th class="py-3 px-4">Hardware Terikat (HWID)</th>
-                        <th class="py-3 px-4">Reset Digunakan</th>
+                        <th class="py-3 px-4">Reset</th>
                         <th class="py-3 px-4">Masa Berlaku</th>
-                        <th class="py-3 px-4 text-right">Aksi</th>
+                        <th class="py-3 px-4 text-right">Aksi & Opsi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
                     @forelse($licenses as $lic)
                         <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                             <td class="py-3.5 px-4 whitespace-nowrap">
-                                <span class="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
-                                    {{ $lic->product_code instanceof \BackedEnum ? $lic->product_code->value : ($lic->product_code ?? 'APOTEK_POS') }}
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono text-[10px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+                                        {{ $lic->product_code instanceof \BackedEnum ? $lic->product_code->value : ($lic->product_code ?? 'APOTEK_POS') }}
+                                    </span>
+                                    @if($lic->status === 'active')
+                                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Status: Aktif"></span>
+                                    @elseif($lic->status === 'suspended')
+                                        <span class="inline-block w-2 h-2 rounded-full bg-amber-500" title="Status: Ditangguhkan"></span>
+                                    @else
+                                        <span class="inline-block w-2 h-2 rounded-full bg-rose-500" title="Status: Dicabut"></span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="py-3.5 px-4 whitespace-nowrap">
-                                <button type="button"
-                                        onclick="copyToClipboard('{{ $lic->license_key }}', this)"
-                                        title="Klik untuk menyalin"
-                                        class="font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded hover:border-indigo-400 transition-colors cursor-pointer">
-                                    {{ $lic->license_key }}
-                                </button>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button"
+                                            onclick="copyToClipboard('{{ $lic->license_key }}', this)"
+                                            title="Klik untuk menyalin"
+                                            class="font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded hover:border-indigo-400 transition-colors cursor-pointer">
+                                        {{ $lic->license_key }}
+                                    </button>
+                                </div>
                             </td>
                             <td class="py-3.5 px-4">
-                                <div class="font-semibold text-slate-900 dark:text-slate-100 leading-snug">{{ $lic->business_name ?? $lic->pharmacy_name }}</div>
+                                <div class="font-semibold text-slate-900 dark:text-slate-100 leading-snug">
+                                    <a href="{{ route('admin.licenses.show', $lic) }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                        {{ $lic->business_name ?? $lic->pharmacy_name }}
+                                    </a>
+                                </div>
                                 <div class="text-[11px] text-slate-500 dark:text-slate-400">{{ $lic->customer_name }} &bull; Cabang: {{ $lic->branch_code }}</div>
                             </td>
                             <td class="py-3.5 px-4 whitespace-nowrap">
@@ -131,19 +146,56 @@
                                 @endif
                             </td>
                             <td class="py-3.5 px-4 whitespace-nowrap text-right">
-                                @if ($lic->bound_hwid)
-                                    <form method="POST" action="{{ route('admin.licenses.reset-hwid', $lic) }}"
-                                          onsubmit="return confirm('Reset HWID lisensi {{ $lic->license_key }}? Klien dapat aktivasi di mesin baru.');" class="inline">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <!-- Detail Link -->
+                                    <a href="{{ route('admin.licenses.show', $lic) }}"
+                                       title="Lihat Detail & Konfigurasi"
+                                       class="p-1.5 rounded-md text-slate-600 hover:text-indigo-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+
+                                    <!-- Edit Link -->
+                                    <a href="{{ route('admin.licenses.edit', $lic) }}"
+                                       title="Edit Lisensi"
+                                       class="p-1.5 rounded-md text-slate-600 hover:text-amber-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-amber-400 dark:hover:bg-slate-800 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
+
+                                    <!-- Reset HWID -->
+                                    @if ($lic->bound_hwid)
+                                        <form method="POST" action="{{ route('admin.licenses.reset-hwid', $lic) }}"
+                                              onsubmit="return confirm('Reset HWID lisensi {{ $lic->license_key }}? Klien dapat aktivasi di mesin baru.');" class="inline">
+                                            @csrf
+                                            <button type="submit"
+                                                    title="Reset HWID Mesin"
+                                                    class="p-1.5 rounded-md text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                                                    {{ !$lic->canResetHwid() ? 'disabled' : '' }}>
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    <!-- Delete Button -->
+                                    <form method="POST" action="{{ route('admin.licenses.destroy', $lic) }}"
+                                          onsubmit="return confirm('Hapus permanen lisensi {{ $lic->license_key }} ({{ $lic->business_name }})?');" class="inline">
                                         @csrf
+                                        @method('DELETE')
                                         <button type="submit"
-                                                class="px-2.5 py-1 rounded text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900 dark:hover:bg-rose-900/60 transition-colors"
-                                                {{ !$lic->canResetHwid() ? 'disabled' : '' }}>
-                                            Reset HWID
+                                                title="Hapus Lisensi"
+                                                class="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
                                         </button>
                                     </form>
-                                @else
-                                    <span class="text-[11px] text-emerald-600 dark:text-emerald-400/80 font-medium">Siap Aktivasi</span>
-                                @endif
+                                </div>
                             </td>
                         </tr>
                     @empty

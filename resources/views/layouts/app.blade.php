@@ -75,20 +75,16 @@
                 
                 <!-- Left: Brand Logo & Title -->
                 <div class="flex items-center gap-6">
-                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 group">
-                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm shadow-indigo-600/30 group-hover:bg-indigo-700 transition-colors">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                            </svg>
-                        </div>
-                        <div>
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 group">
+                        <img src="{{ asset('images/logo.png') }}" alt="Laksana Solution" class="h-8 w-auto object-contain">
+                        <div class="border-l border-slate-200 dark:border-slate-800 pl-3">
                             <div class="flex items-center gap-2">
-                                <span class="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Universal License Server</span>
+                                <span class="text-xs font-bold tracking-tight text-slate-900 dark:text-white">Universal License Server</span>
                                 <span class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 dark:border dark:border-indigo-800">
                                     Ed25519
                                 </span>
                             </div>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400 -mt-0.5">Hardware Binding & Multi-App Engine</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 -mt-0.5">Hardware Binding & Multi-App Engine</p>
                         </div>
                     </a>
 
