@@ -103,6 +103,17 @@ class LicenseApiController extends Controller
             ], 422);
         }
 
+        // Generate & Sign payload first before committing binding to database
+        try {
+            $payload = $this->signer->buildPayload($license, $hwid);
+            $certificate = $this->signer->signPayload($payload);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Server Cloud Hub gagal menandatangani sertifikat: ' . $e->getMessage(),
+            ], 500);
+        }
+
         // First activation: bind HWID
         if ($license->bound_hwid === null) {
             $license->bound_hwid = $hwid;
@@ -126,9 +137,6 @@ class LicenseApiController extends Controller
                 'notes' => 'Lisensi direfresh/re-aktivasi pada mesin yang sama.',
             ]);
         }
-
-        $payload = $this->signer->buildPayload($license, $hwid);
-        $certificate = $this->signer->signPayload($payload);
 
         return response()->json([
             'status' => 'success',
@@ -159,8 +167,15 @@ class LicenseApiController extends Controller
             return response()->json(['status' => 'error', 'message' => 'HWID mismatch.'], 422);
         }
 
-        $payload = $this->signer->buildPayload($license, $hwid);
-        $certificate = $this->signer->signPayload($payload);
+        try {
+            $payload = $this->signer->buildPayload($license, $hwid);
+            $certificate = $this->signer->signPayload($payload);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Server Cloud Hub gagal menandatangani sertifikat: ' . $e->getMessage(),
+            ], 500);
+        }
 
         $license->auditLogs()->create([
             'action' => 'refreshed',
