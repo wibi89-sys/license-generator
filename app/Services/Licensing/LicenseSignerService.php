@@ -62,7 +62,8 @@ class LicenseSignerService
         }
 
         $privateKey = base64_decode($keyB64, true);
-        if ($privateKey === false || strlen($privateKey) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
+        $expectedKeyBytes = defined('\SODIUM_CRYPTO_SIGN_SECRETKEYBYTES') ? \SODIUM_CRYPTO_SIGN_SECRETKEYBYTES : 64;
+        if ($privateKey === false || strlen($privateKey) !== $expectedKeyBytes) {
             throw new RuntimeException('Invalid Ed25519 private key.');
         }
 
