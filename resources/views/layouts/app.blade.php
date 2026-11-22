@@ -187,7 +187,7 @@
                 <span>Universal License Engine &bull; Zero Dependency Verification</span>
             </div>
             <div>
-                &copy; {{ date('Y') }} Universal License Server &bull; Ed25519 Cryptographic Security
+                &copy; {{ date('Y') }} Laksana Solution
             </div>
         </div>
     </footer>
