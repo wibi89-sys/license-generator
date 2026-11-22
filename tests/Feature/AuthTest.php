@@ -177,4 +177,37 @@ class AuthTest extends TestCase
             'id' => $license->id,
         ]);
     }
+
+    public function test_authenticated_user_can_view_and_update_settings(): void
+    {
+        $user = User::factory()->create();
+
+        // 1. View Settings
+        $response = $this->actingAs($user)->get('/admin/settings');
+        $response->assertStatus(200)
+            ->assertSee('Pengaturan Aplikasi & Lisensi')
+            ->assertSee('Ed25519 Public Verification Key');
+
+        // 2. Update Settings
+        $responseUpdate = $this->actingAs($user)->put('/admin/settings', [
+            'app_name' => 'Custom License Hub',
+            'company_name' => 'PT Laksana Maju',
+            'app_tagline' => 'Solusi Lisensi Modern',
+            'footer_text' => '© 2026 PT Laksana Maju',
+            'server_public_url' => 'https://license.example.com',
+            'default_reset_limit' => 5,
+            'default_grace_days' => 20,
+            'default_heartbeat_days' => 10,
+        ]);
+
+        $responseUpdate->assertRedirect(route('admin.settings.index'));
+        $this->assertEquals('Custom License Hub', \App\Models\AppSetting::get('app_name'));
+        $this->assertEquals('PT Laksana Maju', \App\Models\AppSetting::get('company_name'));
+        $this->assertEquals(5, (int) \App\Models\AppSetting::get('default_reset_limit'));
+
+        // 3. Regenerate API Token
+        $responseToken = $this->actingAs($user)->post('/admin/settings/regenerate-token');
+        $responseToken->assertRedirect(route('admin.settings.index'));
+        $this->assertNotEmpty(\App\Models\AppSetting::get('master_api_token'));
+    }
 }

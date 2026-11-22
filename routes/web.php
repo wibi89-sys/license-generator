@@ -34,5 +34,10 @@ Route::middleware('auth')->group(function () {
         // License Actions
         Route::post('/licenses/{license}/reset-hwid', [LicenseController::class, 'resetHwid'])->name('licenses.reset-hwid');
         Route::post('/licenses/{license}/toggle-status', [LicenseController::class, 'toggleStatus'])->name('licenses.toggle-status');
+
+        // Application Settings routes
+        Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+        Route::put('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+        Route::post('/settings/regenerate-token', [\App\Http\Controllers\Admin\SettingController::class, 'regenerateApiToken'])->name('settings.regenerate-token');
     });
 });

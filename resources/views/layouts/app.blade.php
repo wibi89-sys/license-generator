@@ -98,6 +98,10 @@
                            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors {{ request()->routeIs('admin.licenses.*') && !request()->routeIs('admin.licenses.create') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200' }}">
                             Manajemen Lisensi
                         </a>
+                        <a href="{{ route('admin.settings.index') }}"
+                           class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors {{ request()->routeIs('admin.settings.*') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                            Pengaturan
+                        </a>
                     </nav>
                 </div>
 
@@ -183,7 +187,7 @@
                 <span>Universal License Engine &bull; Zero Dependency Verification</span>
             </div>
             <div>
-                &copy; {{ date('Y') }} Laksana Solution
+                {{ \App\Models\AppSetting::get('footer_text', '© 2026 Laksana Solution') }}
             </div>
         </div>
     </footer>

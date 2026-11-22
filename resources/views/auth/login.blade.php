@@ -68,13 +68,16 @@
         <div class="bg-white dark:bg-slate-900 border border-slate-100/80 dark:border-slate-800 rounded-3xl p-8 sm:p-9 shadow-[0_15px_35px_rgba(0,0,0,0.05)] dark:shadow-none transition-colors">
             
             <!-- Logo Resmi Laksana Solution -->
-            <div class="flex justify-center mb-6">
-                <img src="{{ asset('images/logo.png') }}" alt="Laksana Solution" class="h-16 w-auto max-w-[220px] object-contain">
+            <div class="flex justify-center mb-4">
+                <img src="{{ asset('images/logo.png') }}" alt="Laksana Solution" class="h-14 w-auto max-w-[220px] object-contain">
             </div>
 
-            <!-- Header Subtitle -->
+            <!-- Header Title & Subtitle -->
             <div class="text-center mb-6">
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white uppercase">
+                    {{ \App\Models\AppSetting::get('app_name', 'LAKSANA LICENSE SERVER') }}
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal">
                     Masuk ke Akun Admin
                 </p>
             </div>
@@ -120,7 +123,7 @@
 
     <!-- Footer -->
     <div class="text-center text-xs text-slate-400 dark:text-slate-500 pb-2">
-        &copy; {{ date('Y') }} Laksana Solution
+        {{ \App\Models\AppSetting::get('footer_text', '© 2026 Laksana Solution') }}
     </div>
 
 </body>
