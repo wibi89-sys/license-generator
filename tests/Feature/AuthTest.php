@@ -74,4 +74,36 @@ class AuthTest extends TestCase
         $response->assertRedirect('/login');
         $this->assertGuest();
     }
+
+    public function test_authenticated_user_can_view_license_management_and_create_license(): void
+    {
+        $user = User::factory()->create();
+
+        $responseIndex = $this->actingAs($user)->get('/admin/licenses');
+        $responseIndex->assertStatus(200)
+            ->assertSee('Universal License Server')
+            ->assertSee('Semua Produk');
+
+        $responseCreate = $this->actingAs($user)->get('/admin/licenses/create');
+        $responseCreate->assertStatus(200)
+            ->assertSee('Terbitkan Lisensi Baru')
+            ->assertSee('Target Produk Aplikasi');
+
+        $responseStore = $this->actingAs($user)->post('/admin/licenses', [
+            'product_code' => 'RETAIL_POS',
+            'customer_name' => 'Pak Joko',
+            'business_name' => 'Minimarket Barokah',
+            'branch_code' => 'BR01',
+            'plan_type' => 'PRO_CLOUD_SYNC',
+            'billing_type' => 'subscription',
+            'max_reset_count' => 3,
+        ]);
+
+        $responseStore->assertRedirect(route('admin.licenses.index'));
+        $this->assertDatabaseHas('licenses', [
+            'customer_name' => 'Pak Joko',
+            'business_name' => 'Minimarket Barokah',
+            'product_code' => 'RETAIL_POS',
+        ]);
+    }
 }

@@ -4,60 +4,66 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AppProduct;
 use App\Http\Controllers\Controller;
-use App\Models\CloudInventoryBatch;
-use App\Models\CloudTransaction;
 use App\Models\License;
+use App\Models\LicenseAuditLog;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     public function index(): View
     {
-        $today = Carbon::today();
-        $thisMonth = Carbon::now()->startOfMonth();
+        // 1. License Overview Metrics
+        $totalLicenses = License::count();
+        $activeLicenses = License::where('status', 'active')->count();
+        $boundLicenses = License::whereNotNull('bound_hwid')->count();
+        $unboundLicenses = License::whereNull('bound_hwid')->count();
 
-        // 1. Turnover & Gross Profit Aggregations
-        $todayTransactions = CloudTransaction::whereDate('transaction_date', $today)->where('status', 'completed')->get();
-        $monthTransactions = CloudTransaction::where('transaction_date', '>=', $thisMonth)->where('status', 'completed')->get();
+        // Expired or Expiring Soon (< 30 days)
+        $expiringSoonCount = License::where('status', 'active')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', Carbon::now()->addDays(30))
+            ->count();
 
-        $todayOmzet = $todayTransactions->sum(fn($t) => (float) $t->grand_total);
-        $monthOmzet = $monthTransactions->sum(fn($t) => (float) $t->grand_total);
-        $monthGrossProfit = $monthTransactions->sum(fn($t) => (float) $t->gross_profit);
+        // 2. Product Distribution Breakdown
+        $productStats = [];
+        foreach (AppProduct::cases() as $product) {
+            $count = License::where('product_code', $product)->count();
+            $activeCount = License::where('product_code', $product)->where('status', 'active')->count();
+            $boundCount = License::where('product_code', $product)->whereNotNull('bound_hwid')->count();
 
-        // 2. Branch Comparisons
-        $branchTurnover = CloudTransaction::select('branch_code', DB::raw('SUM(grand_total) as total_turnover'), DB::raw('COUNT(*) as total_transactions'))
-            ->where('status', 'completed')
-            ->groupBy('branch_code')
+            $productStats[$product->value] = [
+                'enum' => $product,
+                'label' => $product->label(),
+                'prefix' => $product->prefix(),
+                'total' => $count,
+                'active' => $activeCount,
+                'bound' => $boundCount,
+            ];
+        }
+
+        // 3. Recent Licenses
+        $recentLicenses = License::latest()
+            ->take(8)
             ->get();
 
-        // 3. Expiry Alert (Near ED < 90 Days)
-        $nearExpiryBatches = CloudInventoryBatch::where('expired_date', '<=', Carbon::now()->addDays(90))
-            ->where('stock_qty', '>', 0)
-            ->orderBy('expired_date', 'asc')
-            ->take(15)
+        // 4. Real-time Audit / Activity Logs
+        $recentAuditLogs = LicenseAuditLog::with('license')
+            ->latest('id')
+            ->take(8)
             ->get();
-
-        // 4. Low Stock Alert (< 10 units)
-        $lowStockBatches = CloudInventoryBatch::where('stock_qty', '<=', 10)
-            ->where('stock_qty', '>', 0)
-            ->orderBy('stock_qty', 'asc')
-            ->take(15)
-            ->get();
-
-        // 5. Total Active Licenses
-        $activeLicensesCount = License::where('status', 'active')->count();
 
         return view('admin.dashboard', compact(
-            'todayOmzet',
-            'monthOmzet',
-            'monthGrossProfit',
-            'branchTurnover',
-            'nearExpiryBatches',
-            'lowStockBatches',
-            'activeLicensesCount'
+            'totalLicenses',
+            'activeLicenses',
+            'boundLicenses',
+            'unboundLicenses',
+            'expiringSoonCount',
+            'productStats',
+            'recentLicenses',
+            'recentAuditLogs'
         ));
     }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk — Apotek Cloud Hub</title>
+    <title>Masuk — Universal License Server</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,10 +17,10 @@
         <!-- Logo & Header -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-3xl mb-3 shadow-lg shadow-indigo-500/10 backdrop-blur-sm">
-                ☁️
+                🔑
             </div>
-            <h1 class="text-2xl font-bold tracking-tight text-white">Apotek Cloud Hub</h1>
-            <p class="text-xs text-slate-400 mt-1">Portal Manajemen Lisensi & Monitoring Multi-Cabang</p>
+            <h1 class="text-2xl font-bold tracking-tight text-white">Universal License Server</h1>
+            <p class="text-xs text-slate-400 mt-1">Pusat Penerbitan, Hardware Binding & Aktivasi Lisensi Multi-Aplikasi</p>
         </div>
 
         <!-- Login Card -->
@@ -89,7 +89,7 @@
         </div>
 
         <p class="text-center text-xs text-slate-500 mt-6">
-            &copy; 2026 Apotek Cloud Hub &bull; Ed25519 Cryptographic Licensing Engine
+            &copy; 2026 Universal License Server &bull; Ed25519 Cryptographic Licensing Engine
         </p>
     </div>
 </body>

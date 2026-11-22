@@ -135,7 +135,7 @@ class CloudSyncApiTest extends TestCase
         $response = $this->actingAs($user)->get('/admin/dashboard');
 
         $response->assertStatus(200)
-            ->assertSee('Apotek Cloud Hub')
-            ->assertSee('Perbandingan Kinerja Omzet Per Cabang');
+            ->assertSee('Universal License Server')
+            ->assertSee('Total Lisensi');
     }
 }
