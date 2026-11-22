@@ -24,3 +24,9 @@ Homestead.yaml
 Thumbs.db
 
 cpanel_deploy_key*
+
+cpanel_ed25519*
+
+vendor.zip
+
+license-server-cpanel.zip
