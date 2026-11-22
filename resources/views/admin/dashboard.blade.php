@@ -1,317 +1,320 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal License Server — Dashboard Manajemen Lisensi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-    </style>
-</head>
-<body class="bg-slate-900 text-slate-100 antialiased min-h-screen">
-    <!-- Navbar -->
-    <header class="bg-slate-800/90 border-b border-slate-700/80 sticky top-0 z-30 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/10">
-                    🔑
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-base font-bold text-white leading-tight">Universal License Server</h1>
-                        <span class="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider">Ed25519 Engine</span>
-                    </div>
-                    <p class="text-xs text-slate-400">Pusat Penerbitan, Hardware Binding & Aktivasi Lisensi Multi-Aplikasi</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
-                <a href="{{ route('admin.licenses.create') }}" class="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 px-3.5 py-2 rounded-xl transition-all shadow-md shadow-indigo-600/20 flex items-center gap-1.5">
-                    <span>+</span>
-                    <span>Terbitkan Lisensi</span>
-                </a>
-                <a href="{{ route('admin.licenses.index') }}" class="text-xs font-semibold text-slate-300 hover:text-white bg-slate-700/60 hover:bg-slate-700 border border-slate-600/80 px-3 py-2 rounded-xl transition-colors">
-                    Daftar Semua Lisensi
-                </a>
-                <div class="border-l border-slate-700 pl-3 flex items-center gap-3">
-                    <span class="text-xs text-slate-400 hidden sm:inline">
-                        Admin: <strong class="text-slate-200">{{ auth()->user()->name ?? 'Administrator' }}</strong>
-                    </span>
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <button type="submit" class="text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
-                            Keluar
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </header>
+@extends('layouts.app')
 
-    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
-        <!-- 4 Top Stat Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Total Licenses -->
-            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-2xl shadow-xl">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Lisensi</span>
-                    <span class="text-lg">📜</span>
-                </div>
-                <p class="text-3xl font-extrabold text-white mt-2">{{ $totalLicenses }}</p>
-                <div class="mt-2 flex items-center gap-2 text-xs text-slate-400">
-                    <span class="text-indigo-400 font-semibold">{{ count($productStats) }} Jenis Produk</span>
-                    <span>&bull;</span>
-                    <span>Semua Tier</span>
-                </div>
-            </div>
+@section('title', 'Dashboard — Universal License Server')
 
-            <!-- Active Licenses -->
-            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-2xl shadow-xl">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Lisensi Aktif</span>
-                    <span class="text-lg">🟢</span>
-                </div>
-                <p class="text-3xl font-extrabold text-emerald-400 mt-2">{{ $activeLicenses }}</p>
-                <div class="mt-2 text-xs text-slate-400">
-                    Status siap pakai & beroperasi
-                </div>
-            </div>
+@section('content')
+<div class="space-y-6">
 
-            <!-- Bound HWID -->
-            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-2xl shadow-xl">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-cyan-400">Perangkat Terikat (HWID)</span>
-                    <span class="text-lg">💻</span>
-                </div>
-                <p class="text-3xl font-extrabold text-cyan-400 mt-2">{{ $boundLicenses }}</p>
-                <div class="mt-2 text-xs text-slate-400">
-                    Terkunci aman ke mesin klien
-                </div>
-            </div>
-
-            <!-- Unbound / Ready to Activate -->
-            <div class="bg-slate-800/80 border border-slate-700/80 p-5 rounded-2xl shadow-xl">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-amber-400">Siap Diaktivasi</span>
-                    <span class="text-lg">⏳</span>
-                </div>
-                <p class="text-3xl font-extrabold text-amber-400 mt-2">{{ $unboundLicenses }}</p>
-                <div class="mt-2 text-xs text-slate-400">
-                    Belum terikat ke perangkat apapun
-                </div>
-            </div>
-        </div>
-
-        <!-- Section: Distribusi Produk Aplikasi -->
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div>
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h2 class="text-lg font-bold text-white">Distribusi Lisensi Berdasarkan Produk</h2>
-                    <p class="text-xs text-slate-400">Satu sistem lisensi terpadu untuk seluruh portofolio aplikasi Anda</p>
+            <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Ringkasan Sistem Lisensi</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Monitoring lisensi, hardware binding (HWID), dan aktivasi perangkat klien secara realtime.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.licenses.create') }}"
+               class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-600/20 transition-all">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Terbitkan Lisensi Baru</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 Proportional Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Total Licenses -->
+        <div class="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Lisensi</span>
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                 </div>
             </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{{ $totalLicenses }}</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">unit</span>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span class="text-indigo-600 dark:text-indigo-400 font-semibold">{{ count($productStats) }} Produk</span>
+                <span>&bull;</span>
+                <span>Semua Tier Lisensi</span>
+            </div>
+        </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                @foreach ($productStats as $code => $stat)
-                    <div class="bg-slate-800/60 border border-slate-700/70 p-5 rounded-2xl hover:border-indigo-500/40 transition-colors">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-mono font-bold bg-slate-900 border border-slate-700 text-indigo-300 px-2.5 py-1 rounded-lg">
-                                Prefix: {{ $stat['prefix'] }}-*
+        <!-- Active Licenses -->
+        <div class="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Lisensi Aktif</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{{ $activeLicenses }}</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">aktif</span>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                Status valid dan dapat divalidasi
+            </div>
+        </div>
+
+        <!-- Bound HWID -->
+        <div class="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Perangkat Terikat</span>
+                <div class="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-2xl sm:text-3xl font-bold tracking-tight text-cyan-600 dark:text-cyan-400">{{ $boundLicenses }}</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">hardware ID</span>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                Terkunci ke motherboard/CPU klien
+            </div>
+        </div>
+
+        <!-- Unbound / Standby -->
+        <div class="p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Menunggu Aktivasi</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-3 flex items-baseline gap-2">
+                <span class="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">{{ $unboundLicenses }}</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">kunci</span>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                Siap di-input pada mesin kasir/aplikasi
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Product Breakdown Section -->
+    <div class="space-y-3">
+        <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Distribusi Per Produk Aplikasi</h2>
+            <span class="text-xs text-slate-500 dark:text-slate-400">Total 4 Ekosistem Aplikasi</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            @foreach ($productStats as $code => $stat)
+                <div class="p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                {{ $stat['prefix'] }}-*
                             </span>
-                            <span class="text-xs font-semibold text-emerald-400 flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                 {{ $stat['active'] }} Aktif
                             </span>
                         </div>
-                        <h3 class="text-sm font-bold text-white">{{ $stat['label'] }}</h3>
-                        <p class="text-[11px] font-mono text-slate-400 mt-0.5">{{ $code }}</p>
-
-                        <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs">
-                            <span class="text-slate-400">Total Lisensi: <strong class="text-white">{{ $stat['total'] }}</strong></span>
-                            <span class="text-slate-400">Terikat HWID: <strong class="text-cyan-300">{{ $stat['bound'] }}</strong></span>
-                        </div>
+                        <h3 class="text-xs font-bold text-slate-900 dark:text-white leading-snug">{{ $stat['label'] }}</h3>
+                        <p class="font-mono text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{{ $code }}</p>
                     </div>
-                @endforeach
-            </div>
-        </div>
 
-        <!-- Section: Lisensi Terbaru Diterbitkan -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-                <div>
-                    <h2 class="text-lg font-bold text-white">Lisensi Terbaru Diterbitkan</h2>
-                    <p class="text-xs text-slate-400">Daftar lisensi terkini beserta status aktivasi mesin klien</p>
+                    <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                        <span class="text-slate-500 dark:text-slate-400">Total: <strong class="text-slate-900 dark:text-white font-semibold">{{ $stat['total'] }}</strong></span>
+                        <span class="text-slate-500 dark:text-slate-400">Terikat HWID: <strong class="text-indigo-600 dark:text-indigo-400 font-semibold">{{ $stat['bound'] }}</strong></span>
+                    </div>
                 </div>
-                <a href="{{ route('admin.licenses.index') }}" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
-                    <span>Lihat Semua ({{ $totalLicenses }})</span>
-                    <span>➔</span>
-                </a>
-            </div>
+            @endforeach
+        </div>
+    </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-700/80 text-xs">
-                    <thead>
-                        <tr class="text-slate-400 font-semibold uppercase tracking-wider text-left">
-                            <th class="py-3 px-3">Produk</th>
-                            <th class="py-3 px-3">Kunci Lisensi</th>
-                            <th class="py-3 px-3">Nama Bisnis / Customer</th>
-                            <th class="py-3 px-3">Paket (Tier)</th>
-                            <th class="py-3 px-3">Status Mesin (HWID)</th>
-                            <th class="py-3 px-3">Masa Berlaku</th>
-                            <th class="py-3 px-3 text-right">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-700/50">
-                        @forelse ($recentLicenses as $lic)
-                            <tr class="hover:bg-slate-700/30 transition-colors">
-                                <td class="py-3 px-3">
-                                    <span class="font-mono font-bold text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded">
-                                        {{ $lic->product_code instanceof \BackedEnum ? $lic->product_code->value : ($lic->product_code ?? 'APOTEK_POS') }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-3">
-                                    <span class="font-mono font-bold text-white bg-slate-900/90 px-2 py-1 rounded border border-slate-700 select-all">
-                                        {{ $lic->license_key }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-3">
-                                    <div class="font-semibold text-slate-100">{{ $lic->business_name ?? $lic->pharmacy_name }}</div>
-                                    <div class="text-[11px] text-slate-400">{{ $lic->customer_name }} &bull; Cabang: {{ $lic->branch_code }}</div>
-                                </td>
-                                <td class="py-3 px-3">
-                                    <span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-700 text-slate-200">
-                                        {{ $lic->plan_type instanceof \BackedEnum ? $lic->plan_type->value : $lic->plan_type }}
-                                    </span>
-                                    <span class="block text-[10px] text-slate-400 capitalize mt-0.5">{{ $lic->billing_type }}</span>
-                                </td>
-                                <td class="py-3 px-3">
-                                    @if ($lic->bound_hwid)
-                                        <div class="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                            <span>{{ $lic->bound_hostname ?? 'Terikat' }}</span>
-                                        </div>
-                                        <div class="font-mono text-[10px] text-slate-400 select-all" title="{{ $lic->bound_hwid }}">
-                                            {{ substr($lic->bound_hwid, 0, 16) }}...
-                                        </div>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 text-amber-400 font-medium">
-                                            <span>⏳</span> Belum terikat
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="py-3 px-3">
-                                    @if ($lic->billing_type === 'lifetime' || !$lic->expires_at)
-                                        <span class="text-indigo-400 font-semibold">Lifetime (Selamanya)</span>
-                                    @else
-                                        <div class="text-slate-200">{{ $lic->expires_at->format('d M Y') }}</div>
-                                        <div class="text-[10px] text-slate-400">{{ $lic->expires_at->diffForHumans() }}</div>
-                                    @endif
-                                </td>
-                                <td class="py-3 px-3 text-right">
-                                    @if ($lic->bound_hwid)
-                                        <form method="POST" action="{{ route('admin.licenses.reset-hwid', $lic) }}" onsubmit="return confirm('Reset HWID lisensi {{ $lic->license_key }}? Mesin kasir klien harus aktivasi ulang.');" class="inline">
-                                            @csrf
-                                            <button type="submit" class="text-[11px] font-semibold text-rose-300 hover:text-white bg-rose-500/20 hover:bg-rose-600 border border-rose-500/30 px-2.5 py-1 rounded-lg transition-colors cursor-pointer" {{ !$lic->canResetHwid() ? 'disabled' : '' }}>
-                                                Reset HWID ({{ $lic->reset_used }}/{{ $lic->max_reset_count }})
-                                            </button>
-                                        </form>
-                                    @else
-                                        <span class="text-[11px] text-slate-500 italic">Siap Dipakai</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="py-8 text-center text-slate-400">
-                                    Belum ada lisensi yang dibuat. Klik tombol "Terbitkan Lisensi" di atas untuk membuat lisensi baru.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+    <!-- Recent Licenses Table Card -->
+    <div class="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-slate-200/90 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+                <h2 class="text-sm font-bold text-slate-900 dark:text-white">Lisensi Terbaru</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daftar kunci lisensi terbaru yang terdaftar pada sistem.</p>
             </div>
+            <a href="{{ route('admin.licenses.index') }}"
+               class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+                <span>Lihat Semua Lisensi ({{ $totalLicenses }})</span>
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
         </div>
 
-        <!-- Section: Real-time Activation & Audit Logs -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-xl">
-            <div class="flex items-center justify-between mb-5">
-                <div>
-                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                        <span>🛡️</span> Log Aktivitas & Audit Keamanan Realtime
-                    </h2>
-                    <p class="text-xs text-slate-400">Catatan riwayat aktivasi, heartbeat, dan pergantian perangkat (anti-piracy)</p>
-                </div>
-            </div>
-
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-700/80 text-xs">
-                    <thead>
-                        <tr class="text-slate-400 font-semibold uppercase tracking-wider text-left">
-                            <th class="py-3 px-3">Waktu</th>
-                            <th class="py-3 px-3">Aksi</th>
-                            <th class="py-3 px-3">Lisensi Terkait</th>
-                            <th class="py-3 px-3">IP Address</th>
-                            <th class="py-3 px-3">HWID Mesin</th>
-                            <th class="py-3 px-3">Catatan</th>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs divide-y divide-slate-200 dark:divide-slate-800">
+                <thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                    <tr>
+                        <th class="py-3 px-4">Produk</th>
+                        <th class="py-3 px-4">Kunci Lisensi</th>
+                        <th class="py-3 px-4">Bisnis / Pelanggan</th>
+                        <th class="py-3 px-4">Tier Paket</th>
+                        <th class="py-3 px-4">Perangkat (HWID)</th>
+                        <th class="py-3 px-4">Masa Berlaku</th>
+                        <th class="py-3 px-4 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    @forelse ($recentLicenses as $lic)
+                        <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                <span class="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+                                    {{ $lic->product_code instanceof \BackedEnum ? $lic->product_code->value : ($lic->product_code ?? 'APOTEK_POS') }}
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                <button type="button"
+                                        onclick="copyToClipboard('{{ $lic->license_key }}', this)"
+                                        title="Klik untuk menyalin lisensi"
+                                        class="font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded hover:border-indigo-400 transition-colors cursor-pointer">
+                                    {{ $lic->license_key }}
+                                </button>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <div class="font-semibold text-slate-900 dark:text-slate-100 leading-snug">{{ $lic->business_name ?? $lic->pharmacy_name }}</div>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400">{{ $lic->customer_name }} &bull; Cabang: {{ $lic->branch_code }}</div>
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                    {{ $lic->plan_type instanceof \BackedEnum ? $lic->plan_type->value : $lic->plan_type }}
+                                </span>
+                                <span class="block text-[10px] text-slate-400 capitalize mt-0.5">{{ $lic->billing_type }}</span>
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                @if ($lic->bound_hwid)
+                                    <div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span>{{ $lic->bound_hostname ?? 'Terikat' }}</span>
+                                    </div>
+                                    <div class="font-mono text-[10px] text-slate-400 dark:text-slate-500" title="{{ $lic->bound_hwid }}">
+                                        {{ substr($lic->bound_hwid, 0, 16) }}...
+                                    </div>
+                                @else
+                                    <span class="inline-flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Belum terikat
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                @if ($lic->billing_type === 'lifetime' || !$lic->expires_at)
+                                    <span class="font-medium text-indigo-600 dark:text-indigo-400">Lifetime</span>
+                                @else
+                                    <div class="text-slate-800 dark:text-slate-200">{{ $lic->expires_at->format('d M Y') }}</div>
+                                    <div class="text-[10px] text-slate-400">{{ $lic->expires_at->diffForHumans() }}</div>
+                                @endif
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap text-right">
+                                @if ($lic->bound_hwid)
+                                    <form method="POST" action="{{ route('admin.licenses.reset-hwid', $lic) }}"
+                                          onsubmit="return confirm('Reset HWID lisensi {{ $lic->license_key }}? Klien dapat aktivasi di mesin baru.');" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                                class="px-2.5 py-1 rounded text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900 dark:hover:bg-rose-900/60 transition-colors"
+                                                {{ !$lic->canResetHwid() ? 'disabled' : '' }}>
+                                            Reset HWID ({{ $lic->reset_used }}/{{ $lic->max_reset_count }})
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="text-[11px] text-slate-400 italic">Siap Pakai</span>
+                                @endif
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-700/50">
-                        @forelse ($recentAuditLogs as $log)
-                            <tr class="hover:bg-slate-700/30 transition-colors">
-                                <td class="py-3 px-3 text-slate-300 whitespace-nowrap">
-                                    {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : '-' }}
-                                </td>
-                                <td class="py-3 px-3">
-                                    @if ($log->action === 'activate')
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                            Aktivasi Berhasil
-                                        </span>
-                                    @elseif ($log->action === 'hwid_reset')
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                                            Reset HWID
-                                        </span>
-                                    @elseif ($log->action === 'heartbeat')
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                            Heartbeat
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-700 text-slate-200">
-                                            {{ $log->action }}
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="py-3 px-3 font-mono font-bold text-white">
-                                    {{ $log->license?->license_key ?? '-' }}
-                                </td>
-                                <td class="py-3 px-3 font-mono text-slate-300">
-                                    {{ $log->ip_address ?? '127.0.0.1' }}
-                                </td>
-                                <td class="py-3 px-3 font-mono text-[10px] text-slate-400 select-all">
-                                    {{ $log->hwid ? substr($log->hwid, 0, 16) . '...' : '-' }}
-                                </td>
-                                <td class="py-3 px-3 text-slate-300">
-                                    {{ $log->notes ?? '-' }}
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="py-8 text-center text-slate-400">
-                                    Belum ada log aktivitas aktivasi tercatat.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-slate-400">
+                                Belum ada lisensi yang dibuat.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    </main>
+    </div>
 
-    <footer class="border-t border-slate-800 mt-12 py-6 text-center text-xs text-slate-500">
-        &copy; 2026 Universal License Server &bull; Ed25519 Cryptographic Licensing Engine &bull; Zero Dependency Offline Verification
-    </footer>
-</body>
-</html>
+    <!-- Audit / Activity Logs Card -->
+    <div class="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-slate-200/90 dark:border-slate-800">
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">Log Aktivitas & Audit Keamanan Realtime</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Catatan riwayat aktivasi, heartbeat, dan pergantian perangkat (anti-piracy).</p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs divide-y divide-slate-200 dark:divide-slate-800">
+                <thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                    <tr>
+                        <th class="py-3 px-4">Waktu</th>
+                        <th class="py-3 px-4">Aksi</th>
+                        <th class="py-3 px-4">Lisensi</th>
+                        <th class="py-3 px-4">IP Address</th>
+                        <th class="py-3 px-4">HWID Mesin</th>
+                        <th class="py-3 px-4">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    @forelse ($recentAuditLogs as $log)
+                        <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                            <td class="py-3 px-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                                {{ $log->created_at ? $log->created_at->format('d/m/Y H:i:s') : '-' }}
+                            </td>
+                            <td class="py-3 px-4 whitespace-nowrap">
+                                @if ($log->action === 'activate')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">
+                                        Aktivasi Berhasil
+                                    </span>
+                                @elseif ($log->action === 'hwid_reset')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800">
+                                        Reset HWID
+                                    </span>
+                                @elseif ($log->action === 'heartbeat')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800">
+                                        Heartbeat
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                        {{ $log->action }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                                {{ $log->license?->license_key ?? '-' }}
+                            </td>
+                            <td class="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                {{ $log->ip_address ?? '127.0.0.1' }}
+                            </td>
+                            <td class="py-3 px-4 font-mono text-[10px] text-slate-400 select-all whitespace-nowrap">
+                                {{ $log->hwid ? substr($log->hwid, 0, 16) . '...' : '-' }}
+                            </td>
+                            <td class="py-3 px-4 text-slate-600 dark:text-slate-400">
+                                {{ $log->notes ?? '-' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-400">
+                                Belum ada aktivitas lisensi tercatat.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+@endsection
